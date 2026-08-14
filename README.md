@@ -2,6 +2,8 @@ Note: This project has bugs that are currently being worked on. I'll get around 
 
 # XDC Epoch Notifier
 
+<img src="image.jpg" alt="XDC Epock Rewards Notifier" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+
 **Daily XDC Masternode Epoch Rewards Notifier**  
 Automatically checks your XDC masternode owner address(es) every day at 08:00 AEST and sends a complete report to your personal ntfy.sh channel.
 
