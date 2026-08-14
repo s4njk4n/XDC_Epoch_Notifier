@@ -1,0 +1,45 @@
+name: XDC Masternode Epoch Rewards Notifier
+
+on:
+  schedule:
+    - cron: '0 22 * * *'    # 08:00 AEST
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Silences Node.js warning forever
+
+permissions:
+  contents: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq bc curl
+
+      - name: Make script executable
+        run: chmod +x ./xdc_epoch_rewards.sh
+
+      - name: Run daily epoch rewards checker
+        env:
+          REWARDS_CSV: ${{ secrets.XDC_REWARDS_CSV }}
+        run: ./xdc_epoch_rewards.sh
+
+      - name: Commit updated balance for tomorrow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add last_balances.json
+          if git diff --staged --quiet; then
+            echo "No balance change to commit"
+          else
+            git commit -m "Update last_balances.json (daily reward check)"
+            git push
+          fi
