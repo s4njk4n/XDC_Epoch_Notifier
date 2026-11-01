@@ -1,87 +1,115 @@
-Note: This project has bugs that are currently being worked on. I'll get around to it when I have time. Alternately, feel free to use/improve. MIT-license.
-
 # XDC Epoch Notifier
 
-<img src="image.jpg" alt="XDC Epock Rewards Notifier" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+<img src="image.jpg" alt="XDC Epoch Rewards Notifier" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
 
-**Daily XDC Masternode Epoch Rewards Notifier**  
-Automatically checks your XDC masternode owner address(es) every day at 08:00 AEST and sends a complete report to your personal ntfy.sh channel.
-
-Even when rewards are zero, it sends a notification so you always know the script is running (daily heartbeat).
+**Daily XDC masternode epoch rewards, pushed to your phone.**
+Every morning at 08:00 (Sydney time by default) it works out exactly how much each of your masternode owner addresses earned since the last report and sends it to your [ntfy](https://ntfy.sh) topic. If a node earned nothing, or the check couldn't run, you get a loud alert instead of a quiet report.
 
 For more projects, visit [XDC Outpost](https://s4njk4n.github.io/XDCOutpost/).
 
-## Free Open-Source Version
-
-For tech-savvy users: Fork and self-host in GitHub Actions. No cost, full control.
-
-### What You Need First
-
-1. **Etherscan V2 API Key**  
-   - What is it? A free API key that lets the script pull transaction data.  
-   - Why needed? To accurately calculate epoch rewards using balance changes + tx analysis (same method as XDC_Masternode_Rewards_Calculator).  
-   - How to get one (free):  
-     a. Go to [https://xdcscan.com/register](https://xdcscan.com/register) or [https://etherscan.io/register](https://etherscan.io/register).  
-     b. Sign up with email/password.  
-     c. Go to API Keys section.  
-     d. Click "Add" and name it (e.g. "XDC Epoch Notifier").  
-     e. Copy the key.
-
-2. **ntfy.sh for Notifications**  
-   - Free push notification service (no account needed).  
-   - Download the app: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) or [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy).  
-   - Create a unique topic (e.g. `xdc-rewards-mysecret123`).  
-   - Subscribe in the app so you receive alerts.
-
-3. **Your Node Details (CSV)**  
-   Make a CSV with one line per masternode:
+## What a notification looks like
 
 ```
-0xYourMasternodeOwnerAddress1,ntfy-topic-name-1,YourEtherscanV2APIKey1
-0xYourMasternodeOwnerAddress2,ntfy-topic-name-2,YourEtherscanV2APIKey2
+XDC rewards: +2,160.00 XDC
+
+✅ xdcabcd…1234: +2,160.0000 XDC
+   48 epochs · 45.0000 XDC per epoch
+   23 Nov 08:00 → 24 Nov 08:00 AEDT (24h)
+   7-day total: 15,120.00 XDC (avg 2,160.00/day)
+   Balance: 10,020,118.50 XDC
 ```
 
-- `owner_address`: Your masternode owner address (0x...)  
-- `ntfy_topic`: Your ntfy.sh topic  
-- `etherscan_v2_api_key`: Your API key for that address
+Tap it to open the address on XDCScan. Several nodes on the same topic arrive as **one** notification with a total.
 
-### Quick Setup
+| Situation | What you get |
+|---|---|
+| Rewards received | Normal-priority report (amount in the title, so you can read it without opening) |
+| **No rewards** in the period | ⚠️ High-priority alert: check the node is online and still a masternode |
+| Unexplained balance drop | ⚠️ High-priority alert |
+| RPC / Etherscan down | ⚠️ "Couldn't check" alert. Nothing is lost: the next report covers the gap |
+| First run | Last 24 h if the RPC keeps history, otherwise "tracking started" |
 
-1. **Fork this repo** (top-right button).  
-2. **Enable workflows** (Actions tab → enable if prompted).  
-3. **Add the secret**:  
-- Go to **Settings** → **Secrets and variables** → **Actions** → **New repository secret**  
-- **Name**: `XDC_REWARDS_CSV`  
-- **Value**: Paste your full CSV (no header line).  
-4. **Add the files** (already included when you fork):  
-- `xdc_epoch_rewards.sh` (main script — keep executable)  
-- `.github/workflows/xdc-rewards-notifier.yml` (daily schedule)  
-5. **Commit & push** — the daily check starts automatically at 08:00 AEST.
+## How rewards are worked out
 
-**Security Notes**:  
-Never commit secrets to code. All sensitive data stays in GitHub Secrets (encrypted). Public forks are safe.
-
-**Debug Tips**:  
-- Check Actions logs for any errors.  
-- No notification? Verify your ntfy topic in the app.
-
-Runs free on GitHub runners.
-
-## Example Notification
+Epoch rewards aren't ordinary transactions, so they're inferred, the same way as [XDC_Masternode_Rewards_Calculator](https://github.com/s4njk4n/XDC_Masternode_Rewards_Calculator):
 
 ```
- XDC Masternode Daily Rewards CheckDate: 2026-03-21 (08:00 AEST)
-Address: 0x1234...
-Epoch rewards received: 124.5678 XDC Daily monitoring check completed successfully
+rewards = balance change − (transfers in − transfers out − gas fees)
 ```
 
+Each run remembers the exact block it stopped at, so late, skipped or failed runs never lose or double-count rewards. Sending or receiving XDC on the owner address doesn't distort the figure.
 
-## Related Projects
-- [XDC_Masternode_Rewards_Calculator](https://github.com/s4njk4n/XDC_Masternode_Rewards_Calculator) — Web-based rewards calculator  
-- [XDC_Tycoon](https://github.com/s4njk4n/XDC_Tycoon) — Masternode status + reward top-up alerts  
-- [XDC_Sentinel](https://github.com/s4njk4n/XDC_Sentinel) — Node uptime monitoring
+## Setup (free, runs on GitHub Actions)
+
+### 1. Get what you need
+
+**Etherscan API key** (free; one key covers XDC):
+1. Sign up at [etherscan.io/register](https://etherscan.io/register).
+2. Open [API Keys](https://etherscan.io/myapikey), click **Add**, name it (e.g. "XDC Epoch Notifier") and copy the key.
+
+**ntfy** (free push notifications, no account needed):
+1. Install the app: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) · [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy).
+2. Subscribe to a topic name that's hard to guess, e.g. `xdc-rewards-7f3k9q2m`. Anyone who knows the name can read it.
+
+### 2. Fork and configure
+
+1. **Fork this repo** (top-right button).
+2. In your fork, open the **Actions** tab and click **I understand my workflows, go ahead and enable them**. Scheduled runs don't start on forks until you do this.
+3. Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+
+| Secret | Value |
+|---|---|
+| `XDC_REWARDS_CSV` (required) | One line per masternode, see below |
+| `ETHERSCAN_API_KEY` (optional) | Your key, if you'd rather not repeat it on every line |
+| `NTFY_TOKEN` (optional) | Access token, if you use a protected ntfy topic |
+
+`XDC_REWARDS_CSV` format, no header needed. The address can start with `xdc` or `0x`; the key column can be left off if you set `ETHERSCAN_API_KEY`:
+
+```
+xdcYourMasternodeOwnerAddress1,your-ntfy-topic,YourEtherscanAPIKey
+xdcYourMasternodeOwnerAddress2,your-ntfy-topic
+```
+
+4. **Test it now**: Actions → *XDC Masternode Epoch Rewards Notifier* → **Run workflow**. You should get a notification within a minute or two.
+
+From then on it runs every day at 08:00 Sydney time.
+
+### Optional settings
+
+Under **Settings → Secrets and variables → Actions → Variables**:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `REPORT_TZ` | `Australia/Sydney` | Time zone for dates in the report ([IANA name](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)) |
+| `NTFY_SERVER` | `https://ntfy.sh` | Your own ntfy server |
+| `XDC_RPC_URLS` | `https://erpc.xinfin.network,https://rpc.ankr.com/xdc` | RPC endpoints, tried in order |
+
+To change the delivery time, edit the `cron` and `timezone` lines in `.github/workflows/xdc-rewards-notifier.yml`.
+
+## Privacy and security
+
+- Secrets stay in GitHub's encrypted secrets. Nothing sensitive is committed.
+- The workflow commits `last_balances.json` each day to remember where it stopped. Addresses in it are stored as hashes, not in plain text. The daily commit also keeps GitHub from pausing the schedule for inactivity.
+- Notifications show a shortened address (`xdcabcd…1234`).
+
+## Troubleshooting
+
+- **No notification?** Open the Actions tab and look at the latest run; errors are shown in plain words. Check the topic in the app matches the CSV exactly.
+- **"isn't a valid XDC address"**: the address must be 40 hex characters after `xdc`/`0x`.
+- **"Etherscan rejected the API key"**: re-copy the key in full.
+- **First run says "tracking started"**: normal when the RPC doesn't keep historical balances. The first full report arrives the next morning.
+
+Run the tests locally with `python3 -m unittest discover -s tests -v`, or try it against the live network without sending anything:
+
+```
+XDC_REWARDS_CSV="xdc...,topic,KEY" DRY_RUN=1 python3 xdc_epoch_notifier.py
+```
+
+## Related projects
+- [XDC_Masternode_Rewards_Calculator](https://github.com/s4njk4n/XDC_Masternode_Rewards_Calculator): rewards over any period, in your browser
+- [XDC_Tycoon](https://github.com/s4njk4n/XDC_Tycoon): masternode status and reward top-up alerts
+- [XDC_Sentinel](https://github.com/s4njk4n/XDC_Sentinel): node uptime monitoring
 
 ---
 
-Made with ❤️ for the XDC community.  
-Use at your own risk. No warranties provided.
+Made with ❤️ for the XDC community. MIT licence. Use at your own risk; no warranties provided.
