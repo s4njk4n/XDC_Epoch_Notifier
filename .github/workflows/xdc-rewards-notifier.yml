@@ -2,44 +2,60 @@ name: XDC Masternode Epoch Rewards Notifier
 
 on:
   schedule:
-    - cron: '0 22 * * *'    # 08:00 AEST
-  workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Silences Node.js warning forever
+    # 08:00 Sydney time all year (handles AEST/AEDT). Change both lines to suit.
+    # GitHub may start scheduled runs a few minutes late; that's harmless,
+    # because each report covers exactly the blocks since the previous one.
+    - cron: '0 8 * * *'
+      timezone: 'Australia/Sydney'
+  workflow_dispatch:      # "Run workflow" button for testing
 
 permissions:
   contents: write
 
+concurrency:
+  group: xdc-rewards-notifier
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@v5
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq bc curl
-
-      - name: Make script executable
-        run: chmod +x ./xdc_epoch_rewards.sh
-
-      - name: Run daily epoch rewards checker
+      - name: Check rewards and send notifications
         env:
-          REWARDS_CSV: ${{ secrets.XDC_REWARDS_CSV }}
-        run: ./xdc_epoch_rewards.sh
+          XDC_REWARDS_CSV: ${{ secrets.XDC_REWARDS_CSV }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          NTFY_SERVER: ${{ vars.NTFY_SERVER }}
+          REPORT_TZ: ${{ vars.REPORT_TZ || 'Australia/Sydney' }}
+          XDC_RPC_URLS: ${{ vars.XDC_RPC_URLS }}
+        run: python3 xdc_epoch_notifier.py
 
-      - name: Commit updated balance for tomorrow
+      - name: Save progress for the next run
+        if: always()     # keep progress for nodes that worked even if one failed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add last_balances.json
           if git diff --staged --quiet; then
-            echo "No balance change to commit"
-          else
-            git commit -m "Update last_balances.json (daily reward check)"
-            git push
+            echo "Nothing to save"
+            exit 0
           fi
+          git commit -m "Update reward tracking state [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --quiet && git push --quiet && exit 0
+            sleep 5
+          done
+          echo "::error::Couldn't save progress; the next report will cover a longer period."
+          exit 1
+
+  test:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m unittest discover -s tests -v
