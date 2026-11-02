@@ -5,7 +5,9 @@
 **Daily XDC masternode epoch rewards, pushed to your phone.**
 Every morning at 08:00 (Sydney time by default) it works out exactly how much each of your masternode owner addresses earned since the last report and sends it to your [ntfy](https://ntfy.sh) topic. If a node earned nothing, or the check couldn't run, you get a loud alert instead of a quiet report.
 
-For more projects, visit [XDC Outpost](https://s4njk4n.github.io/XDCOutpost/).
+**[Step-by-step setup guide →](https://xdcoutpost.xyz/XDC_Epoch_Notifier/)** (includes a helper that builds your settings for you)
+
+For more projects, visit [XDC Outpost](https://xdcoutpost.xyz/).
 
 ## What a notification looks like
 
@@ -51,11 +53,11 @@ Each run remembers the exact block it stopped at, so late, skipped or failed run
 1. Install the app: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) · [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy).
 2. Subscribe to a topic name that's hard to guess, e.g. `xdc-rewards-7f3k9q2m`. Anyone who knows the name can read it.
 
-### 2. Fork and configure
+### 2. Make your own copy and configure it
 
-1. **Fork this repo** (top-right button).
-2. In your fork, open the **Actions** tab and click **I understand my workflows, go ahead and enable them**. Scheduled runs don't start on forks until you do this.
-3. Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+1. Click **Use this template → Create a new repository** (top right), name it and choose **Private**.
+   You can fork instead, but a fork must stay public, and its scheduled runs don't start until you open the **Actions** tab and click **I understand my workflows, go ahead and enable them**.
+2. Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
 
 | Secret | Value |
 |---|---|
@@ -70,7 +72,7 @@ xdcYourMasternodeOwnerAddress1,your-ntfy-topic,YourEtherscanAPIKey
 xdcYourMasternodeOwnerAddress2,your-ntfy-topic
 ```
 
-4. **Test it now**: Actions → *XDC Masternode Epoch Rewards Notifier* → **Run workflow**. You should get a notification within a minute or two.
+3. **Test it now**: Actions → *XDC Masternode Epoch Rewards Notifier* → **Run workflow**. You should get a notification within a minute or two.
 
 From then on it runs every day at 08:00 Sydney time.
 
@@ -85,6 +87,19 @@ Under **Settings → Secrets and variables → Actions → Variables**:
 | `XDC_RPC_URLS` | `https://erpc.xinfin.network,https://rpc.ankr.com/xdc` | RPC endpoints, tried in order |
 
 To change the delivery time, edit the `cron` and `timezone` lines in `.github/workflows/xdc-rewards-notifier.yml`.
+
+### Getting reports on time
+
+GitHub often starts scheduled runs late, sometimes by a few hours. For reports at an exact time, let a free scheduler such as [cron-job.org](https://cron-job.org) start the workflow:
+
+1. In GitHub, create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) for your notifier repository only, with **Actions: Read and write** permission.
+2. In cron-job.org, create a job at your chosen time and time zone that sends a **POST** to
+   `https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/actions/workflows/xdc-rewards-notifier.yml/dispatches`
+   with headers `Authorization: Bearer YOUR_TOKEN`, `Accept: application/vnd.github+json` and `Content-Type: application/json`, and body `{"ref":"main"}`.
+3. Turn on cron-job.org's email for failed runs, so you hear about an expired token.
+4. Delete the `schedule:` block from the workflow file (keep `workflow_dispatch:`), so GitHub's late run doesn't send a second report.
+
+Click **Test run** in cron-job.org: a `204` response means it worked.
 
 ## Privacy and security
 

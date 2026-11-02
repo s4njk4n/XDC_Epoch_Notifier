@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XDC Epoch Notifier: daily masternode rewards on your phone | XDC Outpost</title>
+  <meta name="license" content="MIT">
+  <meta name="description" content="A phone notification every morning with the epoch rewards your XDC masternodes earned, and a loud alert if a node earned nothing. Free, open source, runs on your own GitHub account.">
+  <link rel="canonical" href="https://xdcoutpost.xyz/XDC_Epoch_Notifier/">
+  <meta name="theme-color" content="#1E1A4A">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://xdcoutpost.xyz/XDC_Epoch_Notifier/">
+  <meta property="og:title" content="XDC Epoch Notifier">
+  <meta property="og:description" content="Your XDC masternode rewards on your phone every morning, with an alert if a node stops earning.">
+  <meta property="og:image" content="https://xdcoutpost.xyz/assets/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@s4njk4n">
+
+  <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
+
+  <style>
+
+    @font-face {
+      font-family: "Bricolage";
+      src: url("/assets/fonts/bricolage.woff2") format("woff2-variations");
+      font-weight: 200 800; font-stretch: 75% 100%; font-display: swap;
+    }
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("/assets/fonts/instrument-sans.woff2") format("woff2-variations");
+      font-weight: 400 700; font-stretch: 75% 100%; font-display: swap;
+    }
+
+    /* ---- Shared XDC Outpost tokens ---- */
+    :root {
+      --night: #1E1A4A;
+      --deep: #19163F;
+      --dusk: #2B2566;
+      --line: #443D84;
+      --ink: #F2EDFF;
+      --mist: #C3B8EA;
+      --signal: #8FDCFF;
+      --flare: #FF9EBB;
+      --ok: #6EE7B7;
+      --display: "Bricolage", "Avenir Next", "Segoe UI", sans-serif;
+      --body: "Instrument Sans", "Helvetica Neue", "Segoe UI", sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --wrap: 72rem;
+      --gutter: clamp(1.25rem, 4vw, 2.5rem);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    body {
+      margin: 0; background: var(--night); color: var(--ink);
+      font-family: var(--body); font-size: 1.0625rem; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--signal); text-underline-offset: 0.2em; }
+    a:hover { color: var(--ink); }
+    :focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+    [hidden] { display: none !important; }
+    .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+    .nb { white-space: nowrap; }
+    .skip { position: absolute; left: 1rem; top: -3rem; background: var(--signal); color: var(--night); padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; z-index: 20; }
+    .skip:focus { top: 1rem; }
+
+    /* Header (matches xdcoutpost.xyz) */
+    .site-header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgb(30 26 74 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
+    .crumbs { display: flex; align-items: center; gap: 0.6rem; min-width: 0; }
+    .brand {
+      display: flex; align-items: center; gap: 0.6rem; white-space: nowrap;
+      color: var(--ink); text-decoration: none;
+      font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: -0.01em;
+    }
+    .brand svg { width: 1.6rem; height: 1.6rem; flex: none; }
+    .crumbs .sep { color: var(--line); font-size: 1.3rem; }
+    .crumbs .here { color: var(--mist); font-weight: 600; white-space: nowrap; }
+    .site-nav { display: flex; gap: clamp(1rem, 3vw, 2rem); }
+    .site-nav a { color: var(--mist); text-decoration: none; font-size: 0.95rem; font-weight: 500; white-space: nowrap; padding: 0.75rem 0; }
+    .site-nav a:hover { color: var(--ink); }
+    @media (max-width: 720px) { .site-nav .wide { display: none; } }
+    @media (max-width: 420px) {
+      .crumbs .sep, .crumbs .here { display: none; }
+    }
+
+    /* Hero */
+    .hero { padding: clamp(3rem, 7vw, 5rem) 0 clamp(3rem, 6vw, 4.5rem); }
+    .hero-grid { display: grid; gap: 2.5rem 4rem; }
+    @media (min-width: 1024px) { .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: start; } }
+    .hero h1 {
+      font-family: var(--display); font-weight: 750; font-stretch: 82%;
+      font-size: clamp(2.5rem, 6vw, 4.75rem); line-height: 0.98; letter-spacing: -0.028em;
+      margin: 0 0 1.5rem; max-width: 13ch; text-wrap: balance;
+    }
+    .hero .lede { font-size: clamp(1.1rem, 2vw, 1.25rem); color: var(--mist); margin: 0 0 1.75rem; max-width: 34em; }
+    .facts { list-style: none; margin: 0 0 2rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .kind {
+      display: inline-block; font-weight: 600; font-size: 0.8rem;
+      padding: 0.2rem 0.7rem; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+    }
+    .kind-web { color: var(--signal); }
+    .kind-quiet { color: var(--mist); }
+    .hero .actions { margin: 0; }
+
+    .panel { background: var(--dusk); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.25rem, 3vw, 2rem); }
+    .panel > p { color: var(--mist); font-size: 0.95rem; margin: 0 0 1.25rem; }
+
+    /* Steps: same two-column pattern as the tool catalogue */
+    .steps { background: var(--deep); padding: clamp(1rem, 3vw, 2rem) 0 clamp(3rem, 7vw, 5rem); }
+    .group { display: grid; gap: 1.5rem 3rem; grid-template-columns: 1fr; padding: 2.5rem 0; border-top: 1px solid var(--line); }
+    .group:first-child { border-top: 0; }
+    @media (min-width: 900px) {
+      .group { grid-template-columns: 17rem minmax(0, 1fr); }
+      .group-head { position: sticky; top: 6rem; align-self: start; }
+    }
+    .step-no {
+      display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+      border: 1.5px solid var(--signal); color: var(--signal);
+      font-family: var(--display); font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem;
+    }
+    .group-head h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 0.5rem; }
+    .group-head p { color: var(--mist); margin: 0; font-size: 0.975rem; }
+    .group-body { display: grid; gap: 1.25rem; max-width: 46rem; }
+
+    /* Forms */
+    .field { display: grid; gap: 0.4rem; }
+    .field label, .field .label { font-weight: 600; font-size: 0.95rem; }
+    .field .hint { color: var(--mist); font-size: 0.875rem; margin: 0; }
+    .row-2 { display: grid; gap: 1.25rem; }
+    @media (min-width: 640px) { .row-2 { grid-template-columns: 1fr 1fr; } }
+    input, textarea {
+      width: 100%; font: inherit; font-size: 1rem; color: var(--ink);
+      background: var(--night); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.75rem 0.9rem; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea { resize: vertical; min-height: 6rem; }
+    textarea.mono, input.mono { font-family: var(--mono); font-size: 0.85rem; }
+    input::placeholder, textarea::placeholder { color: #8E84BE; }
+    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(143 220 255 / 0.2); }
+    input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--flare); }
+
+    details.settings { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
+    details.settings summary { cursor: pointer; padding: 0.75rem 0; color: var(--mist); font-weight: 600; font-size: 0.95rem; }
+    details.settings[open] { padding-bottom: 0.9rem; }
+
+    /* Buttons (match main site) */
+    .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.7rem 1.2rem; border-radius: 8px; border: 1px solid transparent;
+      font: inherit; font-weight: 600; font-size: 0.975rem; text-decoration: none; white-space: nowrap; cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .btn-primary { background: var(--signal); color: var(--night); }
+    .btn-primary:hover { background: var(--ink); color: var(--night); }
+    .btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+    .btn-ghost:hover { border-color: var(--signal); color: var(--ink); }
+    .btn-small { padding: 0.35rem 0.75rem; font-size: 0.85rem; }
+    .btn[disabled] { opacity: 0.55; cursor: progress; }
+    .btn svg { width: 1rem; height: 1rem; fill: currentColor; flex: none; }
+
+    /* Key / output boxes */
+      background: var(--night); border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.75rem 0.9rem; min-height: 3.25rem;
+      font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; word-break: break-all;
+      max-height: 9rem; overflow-y: auto; color: var(--ink);
+    }
+
+    /* Notices */
+    .notice { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--line); background: var(--dusk); font-size: 0.95rem; }
+    .notice strong { font-weight: 600; }
+    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(255 158 187 / 0.08); }
+    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(110 231 183 / 0.07); }
+    .notice[data-tone="warn"] { border-left: 3px solid var(--flare); }
+    .notice .hash { font-family: var(--mono); font-size: 0.8rem; word-break: break-all; }
+    .notice .actions { margin-top: 0.6rem; }
+
+
+    /* Things to know */
+    .know { padding: clamp(3rem, 7vw, 5rem) 0; }
+    .know h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 2rem; }
+    .know-grid { display: grid; gap: 1.5rem 3rem; }
+    @media (min-width: 800px) { .know-grid { grid-template-columns: 1fr 1fr; } }
+    .know h3 { font-family: var(--display); font-weight: 650; font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .know p, .know li { color: var(--mist); margin: 0; }
+    .know ol { margin: 0.5rem 0 0; padding-left: 1.25rem; display: grid; gap: 0.3rem; }
+
+    /* Contact + footer (match main site) */
+    .contact { padding: clamp(3rem, 7vw, 5rem) 0; border-top: 1px solid var(--line); }
+    .contact .wrap { display: grid; gap: 2rem 4rem; }
+    @media (min-width: 900px) { .contact .wrap { grid-template-columns: 1fr 1fr; align-items: start; } }
+    .contact h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 1rem; }
+    .contact p { color: var(--mist); margin: 0; max-width: 30em; }
+    .channels { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .channels a { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.25rem; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+    .channels a:hover { color: var(--signal); }
+    .channels svg { width: 1.4rem; height: 1.4rem; fill: currentColor; flex: none; }
+    .channels .name { font-weight: 600; min-width: 5.5rem; }
+    .channels .handle { color: var(--mist); }
+    .site-footer { border-top: 1px solid var(--line); padding: 2rem 0; color: var(--mist); font-size: 0.9rem; }
+    .site-footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    .site-footer p { margin: 0; }
+    .site-footer a { display: inline-block; padding: 0.6rem 0; }
+
+    /* ---- Notifier-specific ---- */
+    .kind-repo { color: var(--mist); }
+    .hint { color: var(--mist); font-size: 0.875rem; margin: 0; }
+    code, .code { font-family: var(--mono); font-size: 0.85em; background: var(--night); border: 1px solid var(--line); border-radius: 5px; padding: 0.05em 0.4em; word-break: break-all; }
+
+    /* Example notifications */
+    .phone { display: grid; gap: 0.75rem; }
+    .phone .caption { color: var(--mist); font-size: 0.85rem; margin: 0 0 0.25rem; }
+    .notif {
+      display: grid; grid-template-columns: 2.25rem 1fr; gap: 0.75rem; align-items: start;
+      background: var(--night); border: 1px solid var(--line); border-radius: 14px; padding: 0.85rem 1rem;
+    }
+    .notif .icon { width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center; background: #332C75; font-size: 1.15rem; }
+    .notif .meta { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--mist); font-size: 0.75rem; }
+    .notif .t { font-weight: 700; margin: 0.1rem 0 0.25rem; font-size: 0.975rem; }
+    .notif pre { margin: 0; font-family: var(--body); font-size: 0.85rem; line-height: 1.5; color: var(--mist); white-space: pre-wrap; }
+    .notif.alert { border-color: var(--flare); }
+    .notif.alert .icon { background: rgb(255 158 187 / 0.18); }
+
+    /* Situations table */
+    table.meaning { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    .meaning th, .meaning td { text-align: left; vertical-align: top; padding: 0.7rem 0.75rem 0.7rem 0; border-bottom: 1px solid var(--line); font-weight: 400; }
+    .meaning thead th { color: var(--mist); font-size: 0.85rem; font-weight: 600; }
+    .meaning tbody th { font-weight: 600; width: 38%; }
+    .meaning td { color: var(--mist); }
+    .tag { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.05rem 0.5rem; border-radius: 999px; border: 1px solid currentColor; margin-right: 0.4rem; white-space: nowrap; }
+    .tag-quiet { color: var(--ok); }
+    .tag-loud { color: var(--flare); }
+
+    /* Builder */
+    .inline { display: flex; gap: 0.5rem; }
+    .inline input { flex: 1; min-width: 0; }
+    .csv-out {
+      background: var(--night); border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 0.9rem;
+      font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; min-height: 3.25rem; margin: 0;
+    }
+    .csv-out:empty::before { content: "Your line appears here once the fields are filled in."; color: #8E84BE; font-family: var(--body); font-size: 0.9rem; }
+    .field-error { color: var(--flare); font-size: 0.875rem; margin: 0; }
+    ol.plain { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.45rem; align-content: start; color: var(--mist); }
+    ol.plain strong { color: var(--ink); font-weight: 600; }
+    details.more { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
+    details.more summary { cursor: pointer; padding: 0.75rem 0; color: var(--mist); font-weight: 600; font-size: 0.95rem; }
+    details.more[open] { padding-bottom: 0.9rem; }
+    details.more p, details.more li { color: var(--mist); font-size: 0.95rem; }
+    details.more p { margin: 0 0 0.6rem; }
+    .copied { color: var(--ok) !important; border-color: var(--ok) !important; }
+  </style>
+  <script src="/assets/analytics.js"></script>
+</head>
+<body>
+  <a class="skip" href="#setup">Skip to setup</a>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-beacon" viewBox="0 0 32 32">
+      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#C3B8EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="7.5" r="3" fill="#FF9EBB"/>
+      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#FF9EBB" stroke-width="1.75" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+    <symbol id="i-telegram" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
+    <symbol id="i-discord" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/></symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="wrap">
+      <div class="crumbs">
+        <a class="brand" href="/"><svg aria-hidden="true"><use href="#i-beacon"/></svg>XDC Outpost</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="here">Epoch Notifier</span>
+      </div>
+      <nav class="site-nav" aria-label="Main">
+        <a href="/#tools">All tools</a>
+        <a class="wide" href="#know">How it works</a>
+        <a class="wide" href="https://github.com/s4njk4n/XDC_Epoch_Notifier" target="_blank" rel="noopener" data-goatcounter-click="github/XDC_Epoch_Notifier">Source code</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div class="wrap hero-grid">
+        <div>
+          <h1 id="title">Your masternode rewards, every morning</h1>
+          <p class="lede">A phone notification each day with the epoch rewards every XDC masternode you own earned. If a node earned nothing, or the check couldn’t run, you get a loud alert instead, so a quietly failing node doesn’t go unnoticed.</p>
+          <ul class="facts" aria-label="Key facts">
+            <li><span class="kind kind-repo">Self-hosted</span></li>
+            <li><span class="kind kind-quiet">Free, no server needed</span></li>
+            <li><span class="kind kind-quiet">iOS and Android</span></li>
+            <li><span class="kind kind-quiet">About 10 minutes to set up</span></li>
+          </ul>
+          <div class="actions">
+            <a class="btn btn-primary" href="#setup">Set it up</a>
+            <a class="btn btn-ghost" href="#alerts">What the alerts mean</a>
+          </div>
+        </div>
+
+        <aside class="panel phone" aria-label="Example notifications">
+          <p class="caption">What arrives on your phone</p>
+          <div class="notif">
+            <span class="icon" aria-hidden="true">💰</span>
+            <div>
+              <div class="meta"><span>ntfy</span><span>08:00</span></div>
+              <p class="t">XDC rewards: +2,160.00 XDC</p>
+<pre>✅ xdcabcd…1234: +2,160.0000 XDC
+   48 epochs · 45.0000 XDC per epoch
+   7-day total: 15,120.00 XDC
+   Balance: 10,020,118.50 XDC</pre>
+            </div>
+          </div>
+          <div class="notif alert">
+            <span class="icon" aria-hidden="true">⚠️</span>
+            <div>
+              <div class="meta"><span>ntfy · high priority</span><span>08:00</span></div>
+              <p class="t">XDC rewards: none received ⚠️</p>
+<pre>⚠️ xdcef01…5678: NO rewards in 48 epochs
+   Check the node is online and still a masternode.</pre>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="steps" id="setup">
+      <div class="wrap">
+
+        <section class="group" aria-labelledby="s1-title">
+          <div class="group-head">
+            <span class="step-no" aria-hidden="true">1</span>
+            <h2 id="s1-title">Get notifications on your phone</h2>
+            <p>ntfy is a free push notification app. No account needed.</p>
+          </div>
+          <div class="group-body">
+            <div class="actions">
+              <a class="btn btn-ghost" href="https://apps.apple.com/us/app/ntfy/id1625396347" target="_blank" rel="noopener" data-goatcounter-click="notifier/app-ios">ntfy for iPhone</a>
+              <a class="btn btn-ghost" href="https://play.google.com/store/apps/details?id=io.heckel.ntfy" target="_blank" rel="noopener" data-goatcounter-click="notifier/app-android">ntfy for Android</a>
+            </div>
+            <div class="field">
+              <label for="topic">Your topic name</label>
+              <div class="inline">
+                <input type="text" id="topic" class="mono" autocomplete="off" spellcheck="false" placeholder="xdc-rewards-…" maxlength="64">
+                <button type="button" class="btn btn-ghost" id="genTopic">Make one</button>
+              </div>
+              <p class="hint">Anyone who knows the name can read your notifications, so make it hard to guess. In the app, tap <strong>+</strong> and subscribe to exactly this name.</p>
+              <p class="field-error" id="topicErr" hidden>Use only letters, numbers, - and _.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="s2-title">
+          <div class="group-head">
+            <span class="step-no" aria-hidden="true">2</span>
+            <h2 id="s2-title">Get a free Etherscan API key</h2>
+            <p>Used to list your address’s transactions so they aren’t mistaken for rewards. One key covers XDC.</p>
+          </div>
+          <div class="group-body">
+            <ol class="plain">
+              <li>Sign up at <a href="https://etherscan.io/register" target="_blank" rel="noopener" data-goatcounter-click="notifier/etherscan-signup">etherscan.io</a> (free).</li>
+              <li>Open <a href="https://etherscan.io/myapikey" target="_blank" rel="noopener" data-goatcounter-click="notifier/etherscan-key">API Keys</a>, click <strong>Add</strong>, name it and copy the key.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="s3-title">
+          <div class="group-head">
+            <span class="step-no" aria-hidden="true">3</span>
+            <h2 id="s3-title">Build your settings</h2>
+            <p>Fill these in and copy the result. It’s put together in your browser; nothing is sent anywhere or saved.</p>
+          </div>
+          <form class="group-body" id="builder" novalidate onsubmit="return false">
+            <div class="field">
+              <label for="addrs">Masternode owner address(es)</label>
+              <textarea id="addrs" class="mono" rows="3" spellcheck="false" autocomplete="off" placeholder="xdc… (one per line for several nodes)"></textarea>
+              <p class="field-error" id="addrErr" hidden></p>
+            </div>
+            <div class="field">
+              <label for="apiKey">Etherscan API key</label>
+              <input type="text" id="apiKey" class="mono" autocomplete="off" spellcheck="false" placeholder="From step 2">
+            </div>
+            <div class="field">
+              <span class="label">Your <code>XDC_REWARDS_CSV</code> secret</span>
+              <pre class="csv-out" id="csvOut" aria-live="polite"></pre>
+              <div class="actions">
+                <button type="button" class="btn btn-primary btn-small" id="copyCsv" disabled>Copy</button>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="group" aria-labelledby="s4-title">
+          <div class="group-head">
+            <span class="step-no" aria-hidden="true">4</span>
+            <h2 id="s4-title">Make your own copy on GitHub</h2>
+            <p>It runs free on GitHub Actions in your own account. You’ll need a free GitHub account.</p>
+          </div>
+          <div class="group-body">
+            <ol class="plain">
+              <li>Click <strong>Create my copy</strong>, give the repository a name and choose <strong>Private</strong>.</li>
+              <li>In your new repository, go to <strong>Settings → Secrets and variables → Actions → New repository secret</strong>.</li>
+              <li>Name it <code>XDC_REWARDS_CSV</code>, paste what you copied in step 3 and save.</li>
+            </ol>
+            <div class="actions">
+              <a class="btn btn-primary" href="https://github.com/new?template_name=XDC_Epoch_Notifier&amp;template_owner=s4njk4n" target="_blank" rel="noopener" data-goatcounter-click="notifier/create-copy">Create my copy</a>
+              <button type="button" class="btn btn-ghost btn-small" data-copy="XDC_REWARDS_CSV">Copy secret name</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="group" aria-labelledby="s5-title">
+          <div class="group-head">
+            <span class="step-no" aria-hidden="true">5</span>
+            <h2 id="s5-title">Test it</h2>
+            <p>Check everything works now instead of waiting until tomorrow.</p>
+          </div>
+          <div class="group-body">
+            <ol class="plain">
+              <li>In your repository, open the <strong>Actions</strong> tab and choose <strong>XDC Masternode Epoch Rewards Notifier</strong>.</li>
+              <li>Click <strong>Run workflow</strong>. A notification should arrive within a minute or two.</li>
+            </ol>
+            <p class="notice">The first message covers the last 24 hours, or says <strong>tracking started</strong> if the network can’t look that far back. Full reports then arrive every morning at about 8:00 Sydney time.</p>
+            <details class="more">
+              <summary>No notification?</summary>
+              <ul>
+                <li>Open the latest run in the Actions tab. Problems are explained in plain words there.</li>
+                <li>Check the topic in the ntfy app matches your settings exactly.</li>
+                <li>Check the secret is named <code>XDC_REWARDS_CSV</code>, all in capitals.</li>
+              </ul>
+            </details>
+            <details class="more">
+              <summary>Change the time, or get it on the dot</summary>
+              <p>Edit the <code>cron</code> and <code>timezone</code> lines in <code>.github/workflows/xdc-rewards-notifier.yml</code> to choose your own time and time zone.</p>
+              <p>GitHub often starts scheduled runs late, sometimes by a few hours. For reports at an exact time, let a free scheduler such as cron-job.org start the workflow. <a href="https://github.com/s4njk4n/XDC_Epoch_Notifier#getting-reports-on-time" target="_blank" rel="noopener" data-goatcounter-click="notifier/on-time-guide">See how</a>.</p>
+            </details>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <section class="know" id="alerts" aria-labelledby="alerts-title">
+      <div class="wrap">
+        <h2 id="alerts-title">What the notifications mean</h2>
+        <table class="meaning">
+          <thead><tr><th scope="col">Situation</th><th scope="col">What you get</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Rewards received</th><td><span class="tag tag-quiet">Normal</span>The amount is in the title, so you can read it without opening the notification. Tap to open the address on XDCScan.</td></tr>
+            <tr><th scope="row">No rewards in the period</th><td><span class="tag tag-loud">High priority</span>Check the node is online and still a masternode.</td></tr>
+            <tr><th scope="row">Balance dropped and your transactions don’t explain it</th><td><span class="tag tag-loud">High priority</span>Worth a look.</td></tr>
+            <tr><th scope="row">Couldn’t check (network or Etherscan problem)</th><td><span class="tag tag-loud">High priority</span>Nothing is lost: the next report covers the gap.</td></tr>
+            <tr><th scope="row">Several nodes</th><td>One notification per topic, with a total. Give nodes different topics if you want them separately.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="know" id="know" aria-labelledby="know-title">
+      <div class="wrap">
+        <h2 id="know-title">Things to know</h2>
+        <div class="know-grid">
+          <div>
+            <h3>How rewards are worked out</h3>
+            <p>Epoch rewards aren’t ordinary transactions, so they’re inferred, exactly like the <a href="/XDC_Masternode_Rewards_Calculator/" data-goatcounter-click="open/XDC_Masternode_Rewards_Calculator">Rewards Calculator</a>: the balance change, minus what your own transfers in, transfers out and gas fees explain.</p>
+          </div>
+          <div>
+            <h3>Nothing is missed or counted twice</h3>
+            <p>Each run remembers the exact block it stopped at. If a run is late, skipped or fails, the next report simply covers the longer period.</p>
+          </div>
+          <div>
+            <h3>Your details stay yours</h3>
+            <p>Your address and API key are stored as encrypted GitHub secrets in your own repository. Notifications show a shortened address, and the saved progress file stores addresses only as hashes.</p>
+          </div>
+          <div>
+            <h3>Want to check a longer period?</h3>
+            <p>Use the <a href="/XDC_Masternode_Rewards_Calculator/" data-goatcounter-click="open/XDC_Masternode_Rewards_Calculator">Rewards Calculator</a> for any date range, such as a financial year. For status changes like standby or slashed, see <a href="https://github.com/s4njk4n/XDC_Tycoon" target="_blank" rel="noopener" data-goatcounter-click="github/XDC_Tycoon">XDC Tycoon</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-title">
+      <div class="wrap">
+        <div>
+          <h2 id="contact-title">Need help?</h2>
+          <p>Stuck on setup, a figure that looks wrong, or an idea? Message me on whichever platform suits you.</p>
+        </div>
+        <ul class="channels">
+          <li><a href="https://t.me/s4njk4n" target="_blank" rel="noopener" data-goatcounter-click="contact/telegram"><svg aria-hidden="true"><use href="#i-telegram"/></svg><span class="name">Telegram</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://discord.com/users/852434672793288724" target="_blank" rel="noopener" data-goatcounter-click="contact/discord"><svg aria-hidden="true"><use href="#i-discord"/></svg><span class="name">Discord</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://x.com/s4njk4n" target="_blank" rel="noopener" data-goatcounter-click="contact/x"><svg aria-hidden="true"><use href="#i-x"/></svg><span class="name">X</span><span class="handle">@s4njk4n</span></a></li>
+          <li><a href="https://github.com/s4njk4n/XDC_Epoch_Notifier" target="_blank" rel="noopener" data-goatcounter-click="github/XDC_Epoch_Notifier"><svg aria-hidden="true"><use href="#i-github"/></svg><span class="name">GitHub</span><span class="handle">Epoch Notifier</span></a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>© <span id="year">2026</span> XDC Outpost, by <a href="https://github.com/s4njk4n?tab=repositories" target="_blank" rel="noopener" data-goatcounter-click="github/profile">s4njk4n</a>. Notifications by <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a>. Transaction data powered by <a href="https://etherscan.io/apis" target="_blank" rel="noopener">Etherscan.io APIs</a>.</p>
+      <p><a href="/">More XDC tools</a></p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const $ = id => document.getElementById(id);
+    const track = name => { if (window.xdcTrack) xdcTrack(name); };
+    const tracked = new Set();
+    const trackOnce = name => { if (!tracked.has(name)) { tracked.add(name); track(name); } };
+
+    // Step 1: topic name
+    function randomTopic() {
+      const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+      const bytes = crypto.getRandomValues(new Uint8Array(10));
+      return 'xdc-rewards-' + Array.from(bytes, b => chars[b % chars.length]).join('');
+    }
+    $('genTopic').addEventListener('click', () => {
+      $('topic').value = randomTopic();
+      trackOnce('notifier/topic-made');
+      build();
+    });
+
+    // Step 3: build the CSV line(s)
+    function toHexAddr(a) { return /^xdc/i.test(a) ? '0x' + a.slice(3) : a; }
+    function build() {
+      const topic = $('topic').value.trim();
+      const key = $('apiKey').value.trim();
+      const lines = $('addrs').value.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+      const bad = lines.filter(a => !/^0x[0-9a-f]{40}$/i.test(toHexAddr(a)));
+      const topicOk = /^[A-Za-z0-9_-]{1,64}$/.test(topic);
+
+      $('topicErr').hidden = !topic || topicOk;
+      $('topic').setAttribute('aria-invalid', String(!!topic && !topicOk));
+      $('addrErr').hidden = !bad.length;
+      $('addrErr').textContent = bad.length ? `Not a valid XDC address: ${bad.join(', ')}. It should be xdc or 0x followed by 40 characters.` : '';
+      $('addrs').setAttribute('aria-invalid', String(!!bad.length));
+
+      let missing = [];
+      if (!lines.length) missing.push('an address');
+      if (!topicOk) missing.push('a topic name (step 1)');
+      if (!key) missing.push('your API key');
+      const ready = !missing.length && !bad.length;
+      $('csvOut').textContent = ready ? lines.map(a => `${'xdc' + toHexAddr(a).slice(2).toLowerCase()},${topic},${key}`).join('\n') : '';
+      $('copyCsv').disabled = !ready;
+    }
+    ['topic', 'addrs', 'apiKey'].forEach(id => $(id).addEventListener('input', build));
+
+    // Copy helpers
+    async function copyText(text, btn) {
+      try { await navigator.clipboard.writeText(text); }
+      catch (_) {
+        const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t);
+        t.select(); document.execCommand('copy'); t.remove();
+      }
+      const label = btn.textContent; btn.textContent = 'Copied'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1600);
+    }
+    $('copyCsv').addEventListener('click', e => { copyText($('csvOut').textContent, e.currentTarget); trackOnce('notifier/settings-copied'); });
+    document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => copyText(b.dataset.copy, b)));
+  </script>
+</body>
+</html>
