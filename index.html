@@ -7,7 +7,7 @@
   <meta name="license" content="MIT">
   <meta name="description" content="A phone notification every morning with the epoch rewards your XDC masternodes earned, and a loud alert if a node earned nothing. Free, open source, runs on your own GitHub account.">
   <link rel="canonical" href="https://xdcoutpost.xyz/XDC_Epoch_Notifier/">
-  <meta name="theme-color" content="#1E1A4A">
+  <meta name="theme-color" content="#0B0D1A">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 
   <meta property="og:type" content="website">
@@ -36,15 +36,15 @@
 
     /* ---- Shared XDC Outpost tokens ---- */
     :root {
-      --night: #1E1A4A;
-      --deep: #19163F;
-      --dusk: #2B2566;
-      --line: #443D84;
-      --ink: #F2EDFF;
-      --mist: #C3B8EA;
-      --signal: #8FDCFF;
-      --flare: #FF9EBB;
-      --ok: #6EE7B7;
+      --night: #0B0D1A;
+      --deep: #090B16;
+      --dusk: #151931;
+      --line: #262C4A;
+      --ink: #EEF0FA;
+      --mist: #9EA4BF;
+      --signal: #6FDFFF;
+      --flare: #FF8FB4;
+      --ok: #7EEBC0;
       --display: "Bricolage", "Avenir Next", "Segoe UI", sans-serif;
       --body: "Instrument Sans", "Helvetica Neue", "Segoe UI", sans-serif;
       --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -71,7 +71,7 @@
     /* Header (matches xdcoutpost.xyz) */
     .site-header {
       position: sticky; top: 0; z-index: 10;
-      background: rgb(30 26 74 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      background: rgb(11 13 26 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--line);
     }
     .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
@@ -144,8 +144,8 @@
     }
     textarea { resize: vertical; min-height: 6rem; }
     textarea.mono, input.mono { font-family: var(--mono); font-size: 0.85rem; }
-    input::placeholder, textarea::placeholder { color: #8E84BE; }
-    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(143 220 255 / 0.2); }
+    input::placeholder, textarea::placeholder { color: #6E7594; }
+    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(111 223 255 / 0.2); }
     input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--flare); }
 
     details.settings { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
@@ -178,8 +178,8 @@
     /* Notices */
     .notice { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--line); background: var(--dusk); font-size: 0.95rem; }
     .notice strong { font-weight: 600; }
-    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(255 158 187 / 0.08); }
-    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(110 231 183 / 0.07); }
+    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(255 143 180 / 0.08); }
+    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(126 235 192 / 0.07); }
     .notice[data-tone="warn"] { border-left: 3px solid var(--flare); }
     .notice .hash { font-family: var(--mono); font-size: 0.8rem; word-break: break-all; }
     .notice .actions { margin-top: 0.6rem; }
@@ -223,12 +223,12 @@
       display: grid; grid-template-columns: 2.25rem 1fr; gap: 0.75rem; align-items: start;
       background: var(--night); border: 1px solid var(--line); border-radius: 14px; padding: 0.85rem 1rem;
     }
-    .notif .icon { width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center; background: #332C75; font-size: 1.15rem; }
+    .notif .icon { width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center; background: #1C2140; font-size: 1.15rem; }
     .notif .meta { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--mist); font-size: 0.75rem; }
     .notif .t { font-weight: 700; margin: 0.1rem 0 0.25rem; font-size: 0.975rem; }
     .notif pre { margin: 0; font-family: var(--body); font-size: 0.85rem; line-height: 1.5; color: var(--mist); white-space: pre-wrap; }
     .notif.alert { border-color: var(--flare); }
-    .notif.alert .icon { background: rgb(255 158 187 / 0.18); }
+    .notif.alert .icon { background: rgb(255 143 180 / 0.18); }
 
     /* Situations table */
     table.meaning { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
@@ -247,7 +247,7 @@
       background: var(--night); border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 0.9rem;
       font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; min-height: 3.25rem; margin: 0;
     }
-    .csv-out:empty::before { content: "Your line appears here once the fields are filled in."; color: #8E84BE; font-family: var(--body); font-size: 0.9rem; }
+    .csv-out:empty::before { content: "Your line appears here once the fields are filled in."; color: #6E7594; font-family: var(--body); font-size: 0.9rem; }
     .field-error { color: var(--flare); font-size: 0.875rem; margin: 0; }
     ol.plain { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.45rem; align-content: start; color: var(--mist); }
     ol.plain strong { color: var(--ink); font-weight: 600; }
@@ -258,6 +258,8 @@
     details.more p { margin: 0 0 0.6rem; }
     .copied { color: var(--ok) !important; border-color: var(--ok) !important; }
   </style>
+  <link rel="stylesheet" href="/assets/outpost.css">
+  <script src="/assets/outpost.js" defer></script>
   <script src="/assets/analytics.js"></script>
   <script type="application/ld+json">
 {
@@ -293,9 +295,9 @@
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-beacon" viewBox="0 0 32 32">
-      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#C3B8EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="16" cy="7.5" r="3" fill="#FF9EBB"/>
-      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#FF9EBB" stroke-width="1.75" stroke-linecap="round"/>
+      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#9EA4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="7.5" r="3" fill="#FF8FB4"/>
+      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#FF8FB4" stroke-width="1.75" stroke-linecap="round"/>
     </symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
     <symbol id="i-telegram" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
