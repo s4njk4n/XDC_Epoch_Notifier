@@ -7,7 +7,7 @@
   <meta name="license" content="MIT">
   <meta name="description" content="A phone notification every morning with the epoch rewards your XDC masternodes earned, and a loud alert if a node earned nothing. Free, open source, runs on your own GitHub account.">
   <link rel="canonical" href="https://xdcoutpost.xyz/XDC_Epoch_Notifier/">
-  <meta name="theme-color" content="#0B0D1A">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 
   <meta property="og:type" content="website">
@@ -18,16 +18,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@s4njk4n">
 
-  <link rel="preload" href="/assets/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 
   <style>
 
-    @font-face {
-      font-family: "Bricolage";
-      src: url("/assets/fonts/bricolage.woff2") format("woff2-variations");
-      font-weight: 200 800; font-stretch: 75% 100%; font-display: swap;
-    }
     @font-face {
       font-family: "Instrument Sans";
       src: url("/assets/fonts/instrument-sans.woff2") format("woff2-variations");
@@ -36,16 +30,16 @@
 
     /* ---- Shared XDC Outpost tokens ---- */
     :root {
-      --night: #0B0D1A;
-      --deep: #090B16;
-      --dusk: #151931;
-      --line: #262C4A;
-      --ink: #EEF0FA;
-      --mist: #9EA4BF;
-      --signal: #6FDFFF;
-      --flare: #FF8FB4;
-      --ok: #7EEBC0;
-      --display: "Bricolage", "Avenir Next", "Segoe UI", sans-serif;
+      --night: #F7F9FC;
+      --deep: #EEF2F7;
+      --dusk: #FFFFFF;
+      --line: #DFE5ED;
+      --ink: #0F1E33;
+      --mist: #475569;
+      --signal: #1D5C96;
+      --flare: #8C6A24;
+      --ok: #1F8A62;
+      --display: "Instrument Sans", "Helvetica Neue", "Segoe UI", sans-serif;
       --body: "Instrument Sans", "Helvetica Neue", "Segoe UI", sans-serif;
       --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       --wrap: 72rem;
@@ -71,7 +65,7 @@
     /* Header (matches xdcoutpost.xyz) */
     .site-header {
       position: sticky; top: 0; z-index: 10;
-      background: rgb(11 13 26 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      background: rgb(255 255 255 / 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--line);
     }
     .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 1rem; }
@@ -79,7 +73,7 @@
     .brand {
       display: flex; align-items: center; gap: 0.6rem; white-space: nowrap;
       color: var(--ink); text-decoration: none;
-      font-family: var(--display); font-weight: 700; font-size: 1.2rem; letter-spacing: -0.01em;
+      font-family: var(--display); font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em;
     }
     .brand svg { width: 1.6rem; height: 1.6rem; flex: none; }
     .crumbs .sep { color: var(--line); font-size: 1.3rem; }
@@ -97,8 +91,8 @@
     .hero-grid { display: grid; gap: 2.5rem 4rem; }
     @media (min-width: 1024px) { .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: start; } }
     .hero h1 {
-      font-family: var(--display); font-weight: 750; font-stretch: 82%;
-      font-size: clamp(2.5rem, 6vw, 4.75rem); line-height: 0.98; letter-spacing: -0.028em;
+      font-family: var(--display); font-weight: 600;
+      font-size: clamp(2.5rem, 6vw, 4.75rem); line-height: 1.05; letter-spacing: -0.028em;
       margin: 0 0 1.5rem; max-width: 13ch; text-wrap: balance;
     }
     .hero .lede { font-size: clamp(1.1rem, 2vw, 1.25rem); color: var(--mist); margin: 0 0 1.75rem; max-width: 34em; }
@@ -111,7 +105,7 @@
     .kind-quiet { color: var(--mist); }
     .hero .actions { margin: 0; }
 
-    .panel { background: var(--dusk); border: 1px solid var(--line); border-radius: 18px; padding: clamp(1.25rem, 3vw, 2rem); }
+    .panel { background: var(--dusk); border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.25rem, 3vw, 2rem); }
     .panel > p { color: var(--mist); font-size: 0.95rem; margin: 0 0 1.25rem; }
 
     /* Steps: same two-column pattern as the tool catalogue */
@@ -125,9 +119,9 @@
     .step-no {
       display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
       border: 1.5px solid var(--signal); color: var(--signal);
-      font-family: var(--display); font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem;
+      font-family: var(--display); font-weight: 600; font-size: 1rem; margin-bottom: 0.75rem;
     }
-    .group-head h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 0.5rem; }
+    .group-head h2 { font-family: var(--display); font-weight: 600; font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 0.5rem; }
     .group-head p { color: var(--mist); margin: 0; font-size: 0.975rem; }
     .group-body { display: grid; gap: 1.25rem; max-width: 46rem; }
 
@@ -144,8 +138,8 @@
     }
     textarea { resize: vertical; min-height: 6rem; }
     textarea.mono, input.mono { font-family: var(--mono); font-size: 0.85rem; }
-    input::placeholder, textarea::placeholder { color: #6E7594; }
-    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(111 223 255 / 0.2); }
+    input::placeholder, textarea::placeholder { color: #64748B; }
+    input:focus, textarea:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 3px rgb(29 92 150 / 0.2); }
     input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--flare); }
 
     details.settings { border: 1px solid var(--line); border-radius: 8px; padding: 0 0.9rem; }
@@ -178,8 +172,8 @@
     /* Notices */
     .notice { margin: 0; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--line); background: var(--dusk); font-size: 0.95rem; }
     .notice strong { font-weight: 600; }
-    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(255 143 180 / 0.08); }
-    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(126 235 192 / 0.07); }
+    .notice[data-tone="error"] { border-color: var(--flare); background: rgb(140 106 36 / 0.08); }
+    .notice[data-tone="ok"] { border-color: var(--ok); background: rgb(31 138 98 / 0.07); }
     .notice[data-tone="warn"] { border-left: 3px solid var(--flare); }
     .notice .hash { font-family: var(--mono); font-size: 0.8rem; word-break: break-all; }
     .notice .actions { margin-top: 0.6rem; }
@@ -187,7 +181,7 @@
 
     /* Things to know */
     .know { padding: clamp(3rem, 7vw, 5rem) 0; }
-    .know h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 2rem; }
+    .know h2 { font-family: var(--display); font-weight: 600; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 2rem; }
     .know-grid { display: grid; gap: 1.5rem 3rem; }
     @media (min-width: 800px) { .know-grid { grid-template-columns: 1fr 1fr; } }
     .know h3 { font-family: var(--display); font-weight: 650; font-size: 1.2rem; margin: 0 0 0.35rem; }
@@ -198,7 +192,7 @@
     .contact { padding: clamp(3rem, 7vw, 5rem) 0; border-top: 1px solid var(--line); }
     .contact .wrap { display: grid; gap: 2rem 4rem; }
     @media (min-width: 900px) { .contact .wrap { grid-template-columns: 1fr 1fr; align-items: start; } }
-    .contact h2 { font-family: var(--display); font-weight: 700; font-stretch: 90%; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 1rem; }
+    .contact h2 { font-family: var(--display); font-weight: 600; font-size: clamp(2rem, 4vw, 2.75rem); letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 1rem; }
     .contact p { color: var(--mist); margin: 0; max-width: 30em; }
     .channels { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
     .channels a { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.25rem; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
@@ -223,12 +217,12 @@
       display: grid; grid-template-columns: 2.25rem 1fr; gap: 0.75rem; align-items: start;
       background: var(--night); border: 1px solid var(--line); border-radius: 14px; padding: 0.85rem 1rem;
     }
-    .notif .icon { width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center; background: #1C2140; font-size: 1.15rem; }
+    .notif .icon { width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center; background: #E7EEF6; font-size: 1.15rem; }
     .notif .meta { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--mist); font-size: 0.75rem; }
     .notif .t { font-weight: 700; margin: 0.1rem 0 0.25rem; font-size: 0.975rem; }
     .notif pre { margin: 0; font-family: var(--body); font-size: 0.85rem; line-height: 1.5; color: var(--mist); white-space: pre-wrap; }
     .notif.alert { border-color: var(--flare); }
-    .notif.alert .icon { background: rgb(255 143 180 / 0.18); }
+    .notif.alert .icon { background: rgb(140 106 36 / 0.18); }
 
     /* Situations table */
     table.meaning { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
@@ -247,7 +241,7 @@
       background: var(--night); border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 0.9rem;
       font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; word-break: break-all; min-height: 3.25rem; margin: 0;
     }
-    .csv-out:empty::before { content: "Your line appears here once the fields are filled in."; color: #6E7594; font-family: var(--body); font-size: 0.9rem; }
+    .csv-out:empty::before { content: "Your line appears here once the fields are filled in."; color: #64748B; font-family: var(--body); font-size: 0.9rem; }
     .field-error { color: var(--flare); font-size: 0.875rem; margin: 0; }
     ol.plain { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.45rem; align-content: start; color: var(--mist); }
     ol.plain strong { color: var(--ink); font-weight: 600; }
@@ -295,9 +289,9 @@
 
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-beacon" viewBox="0 0 32 32">
-      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#9EA4BF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="16" cy="7.5" r="3" fill="#FF8FB4"/>
-      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#FF8FB4" stroke-width="1.75" stroke-linecap="round"/>
+      <path d="M11 29 L16 11 L21 29 M12.6 23 H19.4 M13.8 18 H18.2" fill="none" stroke="#0F1E33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="16" cy="7.5" r="3" fill="#B08433"/>
+      <path d="M9.5 4.5 A9 9 0 0 0 9.5 10.5 M22.5 4.5 A9 9 0 0 1 22.5 10.5" fill="none" stroke="#B08433" stroke-width="1.75" stroke-linecap="round"/>
     </symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
     <symbol id="i-telegram" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></symbol>
@@ -539,6 +533,7 @@
   <footer class="site-footer">
     <div class="wrap">
       <p>© <span id="year">2026</span> XDC Outpost, by <a href="https://github.com/s4njk4n?tab=repositories" target="_blank" rel="noopener" data-goatcounter-click="github/profile">s4njk4n</a>. Notifications by <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a>. Transaction data powered by <a href="https://etherscan.io/apis" target="_blank" rel="noopener">Etherscan.io APIs</a>.</p>
+      <p class="foot-note">Built and run independently; not operated by the XDC Foundation or XinFin. Open source under the MIT licence and provided as is, without warranty.</p>
       <p><a href="/">More XDC tools</a></p>
     </div>
   </footer>
